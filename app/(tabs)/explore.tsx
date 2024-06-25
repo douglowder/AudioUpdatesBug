@@ -15,7 +15,7 @@ export default function TabTwoScreen() {
   async function loadSound() {
     console.log('Loading Sound');
     Audio.Sound.createAsync(
-      require('@/assets/audio/owenmarshall-allistrums.mp3'),
+      require('@/assets/audio/owenmarshall_allistrums.mp3'),
     )
       .then(({ sound }) => {
         setSound(sound);
