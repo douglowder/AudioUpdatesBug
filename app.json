@@ -31,6 +31,24 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "updates": {
+        "assetPatternsToBeBundled": [
+          "assets/images/*.png"
+        ]
+      },
+      "router": {
+        "origin": false
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "requestHeaders": {
+        "expo-channel-name": "main"
+      }
     }
   }
 }
