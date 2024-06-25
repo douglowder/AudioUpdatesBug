@@ -1,70 +1,166 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { StyleSheet, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AVPlaybackStatusError, Audio } from 'expo-av';
+import {
+  UseUpdatesReturnType,
+  checkForUpdateAsync,
+  fetchUpdateAsync,
+  reloadAsync,
+  useUpdates,
+} from 'expo-updates';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-export default function HomeScreen() {
+function currentlyRunningText(updatesInfo: UseUpdatesReturnType) {
+  return (
+    `Bundle ID: ${updatesInfo.currentlyRunning?.updateId ?? 'not defined'}\n` +
+    `Bundle created: ${
+      updatesInfo.currentlyRunning?.createdAt ?? 'not defined'
+    }\n` +
+    `${
+      updatesInfo.currentlyRunning.isEmbeddedLaunch
+        ? 'Bundle is embedded'
+        : 'Bundle is an update'
+    }`
+  );
+}
+
+function availableUpdateText(updatesInfo: UseUpdatesReturnType) {
+  return `Update ID: ${updatesInfo.availableUpdate?.updateId ?? 'not defined'}`;
+}
+
+function TextButton(props: { title: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={props.onPress}>
+      {({ pressed }) => (
+        <ThemedText
+          type="defaultSemiBold"
+          style={{ opacity: pressed ? 0.6 : 1.0 }}
+        >
+          {props.title}
+        </ThemedText>
+      )}
+    </Pressable>
+  );
+}
+
+export default function TabTwoScreen() {
+  const [sound, setSound] = useState<Audio.Sound>();
+  const [error, setError] = useState<string>('');
+  const [uri, setUri] = useState<string>('');
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const updatesInfo = useUpdates();
+
+  async function loadSound() {
+    console.log('Loading Sound');
+    Audio.Sound.createAsync(
+      require('@/assets/audio/owenmarshall_allistrums.mp3'),
+    )
+      .then(({ sound, status }) => {
+        if (status.isLoaded && sound) {
+          setSound(sound);
+          setUri(status.uri);
+        } else {
+          setError(
+            `Sound not loaded: ${
+              (status as unknown as AVPlaybackStatusError).error
+            }`,
+          );
+        }
+      })
+      .catch((error) => {
+        setError(error);
+      });
+  }
+
+  async function playPause() {
+    try {
+      if (sound) {
+        if (isPlaying) {
+          await sound.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          await sound.playAsync();
+          setIsPlaying(true);
+        }
+      } else {
+        setError('no sound');
+      }
+    } catch (error) {
+      setError(`${error}`);
+    }
+  }
+
+  useEffect(() => {
+    if (!sound) {
+      loadSound();
+    }
+  }, [sound]);
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
       headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
+        <Ionicons size={310} name="code-slash" style={styles.headerImage} />
+      }
+    >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
+        <ThemedText type="title">Audio test</ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
+      <ThemedView>
+        <ThemedText style={styles.uriText}>{`Sound URI: ${uri}`}</ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
+      <ThemedView>
+        <TextButton
+          title={isPlaying ? 'Pause sound' : 'Play sound'}
+          onPress={() => playPause()}
+        />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
+      <ThemedView>
+        <ThemedText>{`Error: ${error.length ? error : 'None'}`}</ThemedText>
+      </ThemedView>
+      <ThemedView>
+        <ThemedText>{currentlyRunningText(updatesInfo)}</ThemedText>
+        {updatesInfo.isUpdateAvailable && (
+          <ThemedText>{availableUpdateText(updatesInfo)}</ThemedText>
+        )}
+      </ThemedView>
+      <ThemedView>
+        <TextButton
+          title="Check for update"
+          onPress={() => checkForUpdateAsync()}
+        />
+        {updatesInfo.isUpdateAvailable && (
+          <TextButton
+            title="Download update"
+            onPress={() => fetchUpdateAsync()}
+          />
+        )}
+        {updatesInfo.isUpdatePending && (
+          <TextButton title="Launch update" onPress={() => reloadAsync()} />
+        )}
       </ThemedView>
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  headerImage: {
+    color: '#808080',
+    bottom: -90,
+    left: -35,
+    position: 'absolute',
+  },
   titleContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  uriText: {
+    fontSize: 10,
+    lineHeight: 12,
   },
 });
