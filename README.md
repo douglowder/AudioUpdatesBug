@@ -28,6 +28,6 @@ eas update --channel=main -m 'Test the bug' -p ios
 ```
 
 - On the simulator screen, tap "Check for update" to see that an update is available. Then click "Download update" to download it, and "Launch update" to relaunch the app with the new bundle.
-- Now there will be no sound URI displayed, and the sound will not play.
+- ~Now there will be no sound URI displayed, and the sound will not play.~ The sound will now play since I added a patch to `expo-updates` to fix the issue.
 
 ![Simulator Screenshot - iPhone 15 - 2024-06-25 at 13 59 06](https://github.com/douglowder/AudioUpdatesBug/assets/6577821/befab6bf-a3f3-4395-afaf-09799e2833cc)

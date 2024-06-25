@@ -1,0 +1,15 @@
+diff --git a/node_modules/expo-updates/ios/EXUpdates/UpdatesUtils.swift b/node_modules/expo-updates/ios/EXUpdates/UpdatesUtils.swift
+index d98b34c..5ac2d2d 100644
+--- a/node_modules/expo-updates/ios/EXUpdates/UpdatesUtils.swift
++++ b/node_modules/expo-updates/ios/EXUpdates/UpdatesUtils.swift
+@@ -99,7 +99,9 @@ public final class UpdatesUtils: NSObject {
+         let absolutePath = path(forBundledAsset: asset)
+         let message = "AppLauncherWithDatabase: embedded asset key = \(asset.key ?? ""), main bundle filename = \(asset.mainBundleFilename ?? ""), path = \(absolutePath ?? "")"
+         logger.debug(message: message)
+-        assetFilesMap[assetKey] = absolutePath
++        if let absolutePath = absolutePath {
++          assetFilesMap[assetKey] = URL(fileURLWithPath: absolutePath).absoluteString
++        }
+       }
+     }
+ 
