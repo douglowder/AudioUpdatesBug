@@ -2,15 +2,45 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
+import {
+  UseUpdatesReturnType,
+  checkForUpdateAsync,
+  fetchUpdateAsync,
+  reloadAsync,
+  useUpdates,
+} from 'expo-updates';
 
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+function currentlyRunningText(updatesInfo: UseUpdatesReturnType) {
+  return (
+    `Bundle ID: ${updatesInfo.currentlyRunning?.updateId ?? 'not defined'}\n` +
+    `Bundle created: ${
+      updatesInfo.currentlyRunning?.createdAt ?? 'not defined'
+    }`
+  );
+}
+
+function availableUpdateText(updatesInfo: UseUpdatesReturnType) {
+  return `Update ID: ${updatesInfo.availableUpdate?.updateId ?? 'not defined'}`;
+}
+
+function TextButton(props: { title: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={props.onPress}>
+      <ThemedText type="defaultSemiBold">{props.title}</ThemedText>
+    </Pressable>
+  );
+}
+
 export default function TabTwoScreen() {
   const [sound, setSound] = useState<Audio.Sound>();
   const [error, setError] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const updatesInfo = useUpdates();
 
   async function loadSound() {
     console.log('Loading Sound');
@@ -53,14 +83,34 @@ export default function TabTwoScreen() {
         <ThemedText type="title">Audio test</ThemedText>
       </ThemedView>
       <ThemedView>
-        <Pressable onPress={() => playPause()}>
-          <ThemedText type="defaultSemiBold">
-            {isPlaying ? 'Pause sound' : 'Play sound'}
-          </ThemedText>
-        </Pressable>
+        <TextButton
+          title={isPlaying ? 'Pause sound' : 'Play sound'}
+          onPress={() => playPause()}
+        />
       </ThemedView>
       <ThemedView>
         <ThemedText>{`Error: ${error.length ? error : 'None'}`}</ThemedText>
+      </ThemedView>
+      <ThemedView>
+        <ThemedText>{currentlyRunningText(updatesInfo)}</ThemedText>
+        {updatesInfo.isUpdateAvailable && (
+          <ThemedText>{availableUpdateText(updatesInfo)}</ThemedText>
+        )}
+      </ThemedView>
+      <ThemedView>
+        <TextButton
+          title="Check for update"
+          onPress={() => checkForUpdateAsync()}
+        />
+        {updatesInfo.isUpdateAvailable && (
+          <TextButton
+            title="Download update"
+            onPress={() => fetchUpdateAsync()}
+          />
+        )}
+        {updatesInfo.isUpdatePending && (
+          <TextButton title="Launch update" onPress={() => reloadAsync()} />
+        )}
       </ThemedView>
     </ParallaxScrollView>
   );
