@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { AVPlaybackStatusError, Audio } from 'expo-av';
+import { Image } from 'expo-image';
 import {
   UseUpdatesReturnType,
   checkForUpdateAsync,
@@ -108,6 +109,13 @@ export default function TabTwoScreen() {
         <Ionicons size={310} name="code-slash" style={styles.headerImage} />
       }
     >
+      <Image
+        source={require('@/extra_images/coffee-prep.jpg')}
+        style={{
+          width: 200,
+          height: 200,
+        }}
+      />
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Audio test</ThemedText>
       </ThemedView>
